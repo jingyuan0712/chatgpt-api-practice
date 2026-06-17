@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <title>My ChatGPT Clone</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="ambient ambient-three"></div>
+
+    <div class="app-shell">
+        <div class="layout-shell">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-top">
+                    <div class="brand brand-compact">
+                        <div class="brand-mark brand-mark-lg">AI</div>
+                        <div class="brand-copy">
+                            <h1>Nova Chat</h1>
+                            <p>AI workspace</p>
+                        </div>
+                    </div>
+
+                    <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Close sidebar">
+                        ×
+                    </button>
+                </div>
+
+                <button class="new-chat-btn" type="button" id="newChatButton">
+                    <span class="new-chat-icon">+</span>
+                    New Chat
+                </button>
+
+                <section class="sidebar-section">
+                    <div class="section-label">Chat History</div>
+                    <div class="history-list">
+                        <button class="history-item active" type="button">
+                            <span class="history-title">Product strategy draft</span>
+                            <span class="history-meta">Today · 2:14 PM</span>
+                        </button>
+                        <button class="history-item" type="button">
+                            <span class="history-title">API debugging notes</span>
+                            <span class="history-meta">Yesterday</span>
+                        </button>
+                        <button class="history-item" type="button">
+                            <span class="history-title">UI redesign ideas</span>
+                            <span class="history-meta">Mon</span>
+                        </button>
+                        <button class="history-item" type="button">
+                            <span class="history-title">Release checklist</span>
+                            <span class="history-meta">Last week</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="sidebar-section sidebar-profile">
+                    <div class="section-label">Profile</div>
+                    <div class="profile-card">
+                        <div class="profile-avatar">JY</div>
+                        <div class="profile-copy">
+                            <strong>jingy user</strong>
+                            <span>Pro workspace</span>
+                        </div>
+                        <span class="profile-badge">Online</span>
+                    </div>
+                </section>
+            </aside>
+
+            <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+            <main class="workspace">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Open sidebar">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                        <div class="workspace-copy">
+                            <span class="workspace-kicker">Commercial AI SaaS</span>
+                            <h1>Chat with Nova</h1>
+                        </div>
+                    </div>
+
+                    <div class="topbar-actions">
+                        <div class="status-pill">
+                            <span class="status-dot"></span>
+                            Ready to chat
+                        </div>
+                    </div>
+                </header>
+
+                <section class="chat-panel" aria-label="Chat conversation">
+                    <div class="messages-wrap" id="messagesWrap" aria-live="polite" aria-atomic="false">
+                        {% if messages %}
+                        <div class="messages" id="messagesList">
+                            {% for message in messages %}
+
+                                {% if message.role == "user" %}
+
+                                    <div class="message-row user">
+                                        <div class="bubble user">
+                                            <div class="bubble-label">你</div>
+                                            {{ message.content }}
+                                        </div>
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="message-row assistant">
+                                        <div class="bubble assistant">
+                                            <div class="bubble-label">AI</div>
+                                            {{ message.content }}
+                                        </div>
+                                    </div>
+
+                                {% endif %}
+
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state" id="messagesList">
+                            <div class="empty-card">
+                                <div class="empty-mark">AI</div>
+                                <h2>Start a new conversation</h2>
+                                <p>輸入你的問題開始對話。這個介面保留原有 Flask 與 Jinja 行為，只升級視覺、排版與互動體驗。</p>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="typing-slot" id="typingSlot" aria-hidden="true"></div>
+                    </div>
+
+                    <div class="composer-shell">
+                        <form method="POST" class="composer" id="chatForm" autocomplete="off">
+
+                            <input
+                                type="text"
+                                id="questionInput"
+                                name="question"
+                                placeholder="輸入問題"
+                                size="60"
+                                required>
+
+                            <button type="submit" id="sendButton">
+                                <span class="send-text">Send</span>
+                                <span class="send-spinner" aria-hidden="true"></span>
+                            </button>
+
+                        </form>
+
+                        <div class="hint-row">
+                            <span>支援完整對話上下文</span>
+                            <span>Enter 送出，畫面會自動捲動到底部</span>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</body>
+
+</html>

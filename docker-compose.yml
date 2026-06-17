@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: chatdb
+
+    environment:
+      POSTGRES_DB: chatdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
