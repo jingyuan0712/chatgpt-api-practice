@@ -1,119 +1,282 @@
 (function () {
+
     const messagesWrap = document.getElementById('messagesWrap');
     const messagesList = document.getElementById('messagesList');
+
     const chatForm = document.getElementById('chatForm');
     const questionInput = document.getElementById('questionInput');
     const sendButton = document.getElementById('sendButton');
 
-    if (!messagesWrap || !chatForm || !questionInput || !sendButton) {
+    const newChatButton = document.querySelector('.new-chat-btn');
+
+    if (
+        !messagesWrap ||
+        !chatForm ||
+        !questionInput ||
+        !sendButton
+    ) {
         return;
     }
 
     let submitting = false;
-    const messageContainer = messagesList && messagesList.classList.contains('messages') ? messagesList : messagesWrap;
 
-    function scrollToBottom(behavior) {
+    function scrollToBottom(behavior = "smooth") {
+
         messagesWrap.scrollTo({
             top: messagesWrap.scrollHeight,
-            behavior: behavior || 'auto'
+            behavior
         });
+
     }
 
     function applyMessageReveal() {
-        const rows = messageContainer ? messageContainer.querySelectorAll('.message-row') : [];
 
-        rows.forEach(function (row, index) {
-            row.style.animationDelay = (index * 35) + 'ms';
+        const rows = document.querySelectorAll('.message-row');
+
+        rows.forEach((row, index) => {
+
+            row.style.opacity = "0";
+            row.style.transform = "translateY(12px)";
+
+            setTimeout(() => {
+
+                row.style.transition =
+                    "all .25s ease";
+
+                row.style.opacity = "1";
+                row.style.transform =
+                    "translateY(0)";
+
+            }, index * 40);
+
         });
+
     }
 
     function createTypingIndicator() {
-        const typingRow = document.createElement('div');
-        typingRow.className = 'message-row assistant typing-row';
-        typingRow.setAttribute('data-typing-indicator', 'true');
-        typingRow.innerHTML = [
-            '<div class="bubble assistant">',
-            '  <div class="bubble-label">AI</div>',
-            '  <div class="typing-indicator" aria-label="AI is typing" role="status">',
-            '    <span class="typing-dot"></span>',
-            '    <span class="typing-dot"></span>',
-            '    <span class="typing-dot"></span>',
-            '  </div>',
-            '</div>'
-        ].join('');
 
-        return typingRow;
-    }
+        const row =
+            document.createElement("div");
 
-    function setLoadingState(isLoading) {
-        sendButton.classList.toggle('is-loading', isLoading);
-        sendButton.setAttribute('aria-busy', String(isLoading));
-        questionInput.readOnly = isLoading;
-        sendButton.disabled = isLoading;
+        row.className =
+            "message-row assistant typing-row";
+
+        row.setAttribute(
+            "data-typing-indicator",
+            "true"
+        );
+
+        row.innerHTML = `
+            <div class="bubble assistant">
+
+                <div class="bubble-header">
+
+                    <div class="avatar-mini ai-avatar">
+                        AI
+                    </div>
+
+                    Nova AI
+
+                </div>
+
+                <div class="typing-indicator">
+
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+
+                </div>
+
+            </div>
+        `;
+
+        return row;
     }
 
     function ensureTypingIndicator() {
-        if (!messageContainer || messageContainer.querySelector('[data-typing-indicator="true"]')) {
-            return null;
+
+        const existing =
+            document.querySelector(
+                '[data-typing-indicator="true"]'
+            );
+
+        if (existing) {
+            return existing;
         }
 
-        const typingIndicator = createTypingIndicator();
-        messageContainer.appendChild(typingIndicator);
-        scrollToBottom('smooth');
-        return typingIndicator;
+        const indicator =
+            createTypingIndicator();
+
+        messagesList.appendChild(indicator);
+
+        scrollToBottom();
+
+        return indicator;
+    }
+
+    function removeTypingIndicator() {
+
+        const indicator =
+            document.querySelector(
+                '[data-typing-indicator="true"]'
+            );
+
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    function setLoadingState(isLoading) {
+
+        sendButton.classList.toggle(
+            "is-loading",
+            isLoading
+        );
+
+        sendButton.disabled =
+            isLoading;
+
+        questionInput.readOnly =
+            isLoading;
+
+        sendButton.setAttribute(
+            "aria-busy",
+            String(isLoading)
+        );
+
     }
 
     function submitChat() {
+
         if (submitting) {
             return;
         }
 
         if (!chatForm.checkValidity()) {
+
             chatForm.reportValidity();
+
             return;
         }
 
         submitting = true;
+
         setLoadingState(true);
+
         ensureTypingIndicator();
 
-        window.requestAnimationFrame(function () {
-            window.requestAnimationFrame(function () {
+        requestAnimationFrame(() => {
+
+            requestAnimationFrame(() => {
+
                 chatForm.submit();
+
             });
+
         });
+
     }
 
-    window.addEventListener('load', function () {
+    window.addEventListener("load", () => {
+
         applyMessageReveal();
-        window.requestAnimationFrame(function () {
-            scrollToBottom('smooth');
-        });
+
+        scrollToBottom("auto");
+
+        questionInput.focus();
+
     });
 
-    messagesWrap.addEventListener('scroll', function () {
-        messagesWrap.dataset.scrolled = String(messagesWrap.scrollTop > 40);
-    }, { passive: true });
+    chatForm.addEventListener(
+        "submit",
+        (event) => {
 
-    chatForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-        submitChat();
-    });
-
-    questionInput.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
+
             submitChat();
+
         }
-    });
+    );
 
-    questionInput.addEventListener('input', function () {
-        sendButton.classList.toggle('has-text', questionInput.value.trim().length > 0);
-    });
+    questionInput.addEventListener(
+        "keydown",
+        (event) => {
 
-    document.querySelectorAll('.message-row').forEach(function (row) {
-        row.addEventListener('animationend', function () {
-            row.style.animationDelay = '0ms';
-        }, { once: true });
-    });
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                submitChat();
+
+            }
+
+        }
+    );
+
+    questionInput.addEventListener(
+        "input",
+        () => {
+
+            const hasText =
+                questionInput.value
+                    .trim()
+                    .length > 0;
+
+            sendButton.classList.toggle(
+                "has-text",
+                hasText
+            );
+
+        }
+    );
+
+    messagesWrap.addEventListener(
+        "scroll",
+        () => {
+
+            messagesWrap.dataset.scrolled =
+                messagesWrap.scrollTop > 40;
+
+        },
+        { passive: true }
+    );
+
+    if (newChatButton) {
+
+        newChatButton.addEventListener(
+            "click",
+            () => {
+
+                newChatButton.animate(
+                    [
+                        {
+                            transform:
+                                "scale(1)"
+                        },
+                        {
+                            transform:
+                                "scale(.96)"
+                        },
+                        {
+                            transform:
+                                "scale(1)"
+                        }
+                    ],
+                    {
+                        duration: 180
+                    }
+                );
+
+                console.log(
+                    "New Chat Clicked"
+                );
+
+            }
+        );
+
+    }
+
 })();
