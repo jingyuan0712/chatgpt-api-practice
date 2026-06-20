@@ -1,31 +1,40 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Chat</title>
+    <title>Nova Chat - Premium AI Workspace</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
 
 <div class="app">
 
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
 
         <div class="logo">
             <div class="logo-icon">AI</div>
-
             <div>
                 <div class="logo-title">Nova Chat</div>
-                <div class="logo-subtitle">
-                    AI Workspace
-                </div>
+                <div class="logo-subtitle">AI SaaS Workspace</div>
             </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="sidebarSearch" placeholder="Search conversations..." autocomplete="off">
         </div>
 
         <button class="new-chat-btn">
@@ -33,175 +42,142 @@
         </button>
 
         <div class="sidebar-section">
-
-            <div class="section-title">
-                Chat History
+            <div class="section-title">Chat History</div>
+            <div class="history-list" id="historyList">
+                {% for conv in conversations %}
+                <div class="history-item {% if conv.id == active_id %}active{% endif %}" data-id="{{ conv.id }}">
+                    <a href="/c/{{ conv.id }}" class="history-link">
+                        <span class="history-title">{{ conv.title }}</span>
+                    </a>
+                    <div class="history-actions">
+                        <button class="menu-trigger-btn" type="button">⋯</button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item rename-btn" type="button">Rename</button>
+                            <button class="dropdown-item delete-btn" type="button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-
-            <div class="history-list">
-
-                <div class="history-item">
-                    Product Strategy Draft
-                </div>
-
-                <div class="history-item">
-                    API Debugging Notes
-                </div>
-
-                <div class="history-item">
-                    UI Redesign Ideas
-                </div>
-
-                <div class="history-item">
-                    Release Checklist
-                </div>
-
-            </div>
-
         </div>
 
         <div class="profile-card">
-
-            <div class="profile-avatar">
-                JY
-            </div>
-
+            <div class="profile-avatar">JY</div>
             <div>
-
-                <div class="profile-name">
-                    Jingyuan
-                </div>
-
-                <div class="profile-role">
-                    Pro Workspace
-                </div>
-
+                <div class="profile-name">Jingyuan</div>
+                <div class="profile-role">Pro Workspace</div>
             </div>
-
         </div>
 
     </aside>
 
-    <!-- Main -->
-
+    <!-- Main Content -->
     <main class="main">
 
         <header class="topbar">
-
-            <div>
-
-                <div class="page-label">
-                    Commercial AI SaaS
-                </div>
-
-                <h1>
-                    Chat with Nova
-                </h1>
-
+            <div class="topbar-left">
+                <button class="hamburger-btn" id="sidebarToggle" type="button">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h1>Chat with Nova</h1>
             </div>
-
-            <div class="status">
-                🟢 Ready
-            </div>
-
+            <div class="status">Ready</div>
         </header>
 
-        <section
-            class="chat-container"
-            id="messagesWrap">
+        <section class="chat-container" id="messagesWrap">
+            <div class="messages" id="messagesList">
 
-            <div
-                class="messages"
-                id="messagesList">
-
-                {% for message in messages %}
-
-                    {% if message.role == "user" %}
-
-                    <div class="message-row user">
-
-                        <div class="bubble user">
-
-                            <div class="bubble-header">
-
-                                <div class="avatar-mini user-avatar">
-                                    JY
-                                </div>
-
-                                You
-
-                            </div>
-
-                            {{ message.content }}
-
+                {% if not messages %}
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-logo">AI</div>
+                    <h2>How can I help you today?</h2>
+                    <div class="prompt-grid">
+                        <div class="prompt-card" data-prompt="Explain Docker in simple terms">
+                            <h3>Explain Docker</h3>
+                            <p>Get a simple breakdown of containers and images</p>
                         </div>
-
-                    </div>
-
-                    {% else %}
-
-                    <div class="message-row assistant">
-
-                        <div class="bubble assistant">
-
-                            <div class="bubble-header">
-
-                                <div class="avatar-mini ai-avatar">
-                                    AI
-                                </div>
-
-                                Nova AI
-
-                            </div>
-
-                            {{ message.content }}
-
+                        <div class="prompt-card" data-prompt="Teach me Python step by step">
+                            <h3>Teach me Python</h3>
+                            <p>Start learning Python fundamentals with examples</p>
                         </div>
-
+                        <div class="prompt-card" data-prompt="Build a Flask app with PostgreSQL">
+                            <h3>Build a Flask app</h3>
+                            <p>Create a backend boilerplate with DB integration</p>
+                        </div>
+                        <div class="prompt-card" data-prompt="Create a SQL query to fetch top records">
+                            <h3>Create a SQL query</h3>
+                            <p>Get custom database queries for your schema</p>
+                        </div>
                     </div>
-
-                    {% endif %}
-
-                {% endfor %}
+                </div>
+                {% else %}
+                    {% for message in messages %}
+                        {% if message.role == "user" %}
+                        <div class="message-row user" data-id="{{ message.id }}">
+                            <div class="bubble user">
+                                <div class="bubble-header">
+                                    <div class="avatar-mini user-avatar">JY</div>
+                                    You
+                                </div>
+                                <div class="message-text">{{ message.content }}</div>
+                                <div class="message-actions">
+                                    <button class="action-btn edit-btn" type="button">✏ Edit</button>
+                                    <button class="action-btn copy-btn" type="button">📋 Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="message-row assistant" data-id="{{ message.id }}">
+                            <div class="bubble assistant">
+                                <div class="bubble-header">
+                                    <div class="avatar-mini ai-avatar">AI</div>
+                                    Nova AI
+                                </div>
+                                <div class="message-text">{{ message.content }}</div>
+                                <div class="message-actions">
+                                    <button class="action-btn copy-btn" type="button">📋 Copy</button>
+                                    <button class="action-btn regenerate-btn" type="button">↻ Regenerate</button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
 
             </div>
-
         </section>
 
         <div class="composer-shell">
-
-            <form
-                method="POST"
-                id="chatForm"
-                class="composer">
-
-                <input
-                    type="text"
-                    name="question"
-                    id="questionInput"
-                    placeholder="Ask Nova anything..."
-                    required>
-
-                <button
-                    id="sendButton"
-                    type="submit">
-
-                    ➤
-
-                </button>
-
+            <form method="POST" id="chatForm" class="composer" data-active-id="{{ active_id }}">
+                <input type="text" name="question" id="questionInput" placeholder="Ask Nova anything..." required autocomplete="off">
+                <button id="sendButton" type="submit">➤</button>
             </form>
-
         </div>
 
     </main>
 
 </div>
 
-<script
-src="{{ url_for('static', filename='script.js') }}">
-</script>
+<!-- Toast Notifications Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-content">
+        <h2>Delete conversation?</h2>
+        <p>This action cannot be undone.</p>
+        <div class="modal-buttons">
+            <button class="modal-btn cancel-btn" id="confirmCancelDelete">Cancel</button>
+            <button class="modal-btn delete-btn" id="confirmConfirmDelete">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
-
 </html>
